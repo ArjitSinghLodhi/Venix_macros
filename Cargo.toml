@@ -2,6 +2,9 @@
 name = "venix_derive"
 version = "1.0.0"
 edition = "2024"
+description = "helper crate for derives for venix ecs"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
 
 [lib]
 proc-macro = true
