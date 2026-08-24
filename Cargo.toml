@@ -5,6 +5,7 @@ edition = "2024"
 description = "helper crate for derives for venix ecs"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/ArjitSinghLodhi/Venix_derive"
 
 [lib]
 proc-macro = true
