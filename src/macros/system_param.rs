@@ -18,7 +18,7 @@ pub fn derive_system_param_impl(input: TokenStream) -> TokenStream {
 
     let mut field_types = Vec::new();
     let mut field_idents = Vec::new();
-    
+
     let is_named = matches!(fields, Fields::Named(_));
     let is_unnamed = matches!(fields, Fields::Unnamed(_));
 
@@ -56,18 +56,16 @@ pub fn derive_system_param_impl(input: TokenStream) -> TokenStream {
         quote! { #name }
     };
 
-    let placeholders: Vec<_> = (0..field_types.len())
-        .map(|_| quote! { _ })
-        .collect();
+    let placeholders: Vec<_> = (0..field_types.len()).map(|_| quote! { _ }).collect();
 
     let mock_instantiation = if is_named {
-        quote! { 
+        quote! {
             let mock_value: #name #ty_generics = unsafe { ::std::mem::zeroed() };
             let #name { #( #field_idents, )* } = mock_value;
             #( let _ = #field_idents; )*
         }
     } else if is_unnamed {
-        quote! { 
+        quote! {
             let mock_value: #name #ty_generics = unsafe { ::std::mem::zeroed() };
             let #name ( #( #placeholders, )* ) = mock_value;
         }

@@ -72,6 +72,15 @@ pub fn derive_bundle_impl(input: TokenStream) -> TokenStream {
                 ::venix::commands::bundle::ComponentBundle::push_to_archetype(tuple_data, archetype);
             }
 
+            #[inline(always)]
+            unsafe fn insert_to_archetype(self, archetype: &mut ::venix::extensions::Archetype, row_idx: usize) {
+                #destructure
+                let tuple_data = (#(#tuple_bindings,)*);
+                unsafe {
+                    ::venix::commands::bundle::ComponentBundle::insert_to_archetype(tuple_data, archetype, row_idx);
+                }
+            }
+
             type NamesArray = [&'static str; #field_count];
 
             #[inline(always)]

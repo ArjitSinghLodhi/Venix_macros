@@ -3,8 +3,8 @@ extern crate proc_macro;
 mod macros {
     pub mod bundle;
     pub mod filter;
-    pub mod system_param;
     pub mod query_data;
+    pub mod system_param;
 }
 
 use proc_macro::TokenStream;

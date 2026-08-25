@@ -5,7 +5,7 @@ use syn::{Data, DeriveInput, Fields, Index, parse_macro_input};
 pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
-    let visibility = &input.vis; 
+    let visibility = &input.vis;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     let fields = match &input.data {
@@ -21,7 +21,7 @@ pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
     let mut field_idents = Vec::new();
     let mut field_visibilities = Vec::new();
     let mut tuple_indices = Vec::new();
-    
+
     let is_named = matches!(fields, Fields::Named(_));
 
     match fields {
@@ -46,8 +46,12 @@ pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
         Fields::Unit => {}
     }
 
-    let item_struct_name = syn::Ident::new(&format!("{}Item", name), proc_macro2::Span::call_site());
-    let readonly_item_name = syn::Ident::new(&format!("{}ReadOnlyItem", name), proc_macro2::Span::call_site());
+    let item_struct_name =
+        syn::Ident::new(&format!("{}Item", name), proc_macro2::Span::call_site());
+    let readonly_item_name = syn::Ident::new(
+        &format!("{}ReadOnlyItem", name),
+        proc_macro2::Span::call_site(),
+    );
 
     let item_fields = if is_named {
         quote! {
@@ -93,18 +97,16 @@ pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
         quote! { #readonly_item_name ( #( tuple_res.#tuple_indices ),* ) }
     };
 
-    let placeholders: Vec<_> = (0..field_types.len())
-        .map(|_| quote! { _ })
-        .collect();
+    let placeholders: Vec<_> = (0..field_types.len()).map(|_| quote! { _ }).collect();
 
     let mock_instantiation = if is_named {
-        quote! { 
+        quote! {
             let mock_value: #name #ty_generics = unsafe { ::std::mem::zeroed() };
             let #name { #( #field_idents, )* } = mock_value;
             #( let _ = #field_idents; )*
         }
     } else {
-        quote! { 
+        quote! {
             let mock_value: #name #ty_generics = unsafe { ::std::mem::zeroed() };
             let #name ( #( #placeholders, )* ) = mock_value;
         }
