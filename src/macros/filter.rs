@@ -75,22 +75,22 @@ pub fn derive_filter_impl(input: TokenStream) -> TokenStream {
             }
         };
 
-        impl #impl_generics ::venix::query::filter::Filter for #name #ty_generics #where_clause {
+        impl #impl_generics ::venix::query::filter::QueryFilter for #name #ty_generics #where_clause {
             #[inline(always)]
             fn matches(types: &::venix::extensions::AccessHashSet<::std::any::TypeId>) -> bool {
-                <( #(#field_types,)* ) as ::venix::query::filter::Filter>::matches(types)
+                <( #(#field_types,)* ) as ::venix::query::filter::QueryFilter>::matches(types)
             }
 
             #[inline(always)]
             fn matches_negated(types: &::venix::extensions::AccessHashSet<::std::any::TypeId>) -> bool {
-                <( #(#field_types,)* ) as ::venix::query::filter::Filter>::matches_negated(types)
+                <( #(#field_types,)* ) as ::venix::query::filter::QueryFilter>::matches_negated(types)
             }
             #[inline(always)]
             fn collect_filter(
                 withs: &mut ::venix::extensions::AccessVec<::std::any::TypeId>,
                 withouts: &mut ::venix::extensions::AccessVec<::std::any::TypeId>,
             ) {
-                <( #(#field_types,)* ) as ::venix::query::filter::Filter>::collect_filter(withs, withouts);
+                <( #(#field_types,)* ) as ::venix::query::filter::QueryFilter>::collect_filter(withs, withouts);
             }
 
             #[inline(always)]
@@ -99,7 +99,7 @@ pub fn derive_filter_impl(input: TokenStream) -> TokenStream {
                 indices: &mut ::std::vec::Vec<usize>,
                 system_data: &mut ::venix::extensions::FunctionData,
             ) {
-                <( #(#field_types,)* ) as ::venix::query::filter::Filter>::filter_indices(archetype, indices, system_data);
+                <( #(#field_types,)* ) as ::venix::query::filter::QueryFilter>::filter_indices(archetype, indices, system_data);
             }
         }
     };

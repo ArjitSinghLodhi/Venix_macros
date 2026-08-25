@@ -51,21 +51,21 @@ pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
 
     let item_fields = if is_named {
         quote! {
-            #( #field_visibilities #field_idents: <#field_types as ::venix::query::params::WorldQuery>::Item<'w>, )*
+            #( #field_visibilities #field_idents: <#field_types as ::venix::query::query::QueryData>::Item<'w>, )*
         }
     } else {
         quote! {
-            #( #field_visibilities <#field_types as ::venix::query::params::WorldQuery>::Item<'w>, )*
+            #( #field_visibilities <#field_types as ::venix::query::query::QueryData>::Item<'w>, )*
         }
     };
 
     let readonly_item_fields = if is_named {
         quote! {
-            #( #field_visibilities #field_idents: <#field_types as ::venix::query::params::WorldQuery>::ReadOnlyItem<'w>, )*
+            #( #field_visibilities #field_idents: <#field_types as ::venix::query::query::QueryData>::ReadOnlyItem<'w>, )*
         }
     } else {
         quote! {
-            #( #field_visibilities <#field_types as ::venix::query::params::WorldQuery>::ReadOnlyItem<'w>, )*
+            #( #field_visibilities <#field_types as ::venix::query::query::QueryData>::ReadOnlyItem<'w>, )*
         }
     };
 
@@ -130,14 +130,14 @@ pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
         #[allow(dead_code)]
         #readonly_item_def
 
-        impl #impl_generics ::venix::query::params::WorldQuery for #name #ty_generics #where_clause {
+        impl #impl_generics ::venix::query::query::QueryData for #name #ty_generics #where_clause {
             type Item<'w> = #item_struct_name<'w>;
             type ReadOnlyItem<'w> = #readonly_item_name<'w>;
-            type Fetch = <( #(#field_types,)* ) as ::venix::query::params::WorldQuery>::Fetch;
+            type Fetch = <( #(#field_types,)* ) as ::venix::query::query::QueryData>::Fetch;
 
             #[inline(always)]
             fn matches(types: &::venix::fxhash::FxHashSet<::std::any::TypeId>) -> bool {
-                <( #(#field_types,)* ) as ::venix::query::params::WorldQuery>::matches(types)
+                <( #(#field_types,)* ) as ::venix::query::query::QueryData>::matches(types)
             }
             #[inline(always)]
             unsafe fn init_fetch(
@@ -145,7 +145,7 @@ pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
                 systems_data: &mut ::venix::extensions::FunctionData,
             ) -> Self::Fetch {
                 unsafe {
-                    <( #(#field_types,)* ) as ::venix::query::params::WorldQuery>::init_fetch(
+                    <( #(#field_types,)* ) as ::venix::query::query::QueryData>::init_fetch(
                         archetype,
                         systems_data,
                     )
@@ -156,7 +156,7 @@ pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
                 reads: &mut ::venix::extensions::AccessVec<::std::any::TypeId>,
                 writes: &mut ::venix::extensions::AccessVec<::std::any::TypeId>,
             ) {
-                <( #(#field_types,)* ) as ::venix::query::params::WorldQuery>::collect_access(
+                <( #(#field_types,)* ) as ::venix::query::query::QueryData>::collect_access(
                     reads,
                     writes,
                 );
@@ -164,7 +164,7 @@ pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
             #[inline(always)]
             unsafe fn fetch_mut<'w>(fetch: Self::Fetch, index: usize) -> Self::Item<'w> {
                 let tuple_res = unsafe {
-                    <( #(#field_types,)* ) as ::venix::query::params::WorldQuery>::fetch_mut(
+                    <( #(#field_types,)* ) as ::venix::query::query::QueryData>::fetch_mut(
                         fetch,
                         index,
                     )
@@ -174,7 +174,7 @@ pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
             #[inline(always)]
             unsafe fn fetch_read_only<'w>(fetch: Self::Fetch, index: usize) -> Self::ReadOnlyItem<'w> {
                 let tuple_res = unsafe {
-                    <( #(#field_types,)* ) as ::venix::query::params::WorldQuery>::fetch_read_only(
+                    <( #(#field_types,)* ) as ::venix::query::query::QueryData>::fetch_read_only(
                         fetch,
                         index,
                     )
