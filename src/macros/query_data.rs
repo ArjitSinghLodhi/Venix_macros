@@ -138,7 +138,7 @@ pub fn derive_query_data_impl(input: TokenStream) -> TokenStream {
             type Fetch = <( #(#field_types,)* ) as ::venix::query::query::QueryData>::Fetch;
 
             #[inline(always)]
-            fn matches(types: &::venix::indexmap::IndexSet<::std::any::TypeId, fxhash::FxBuildHasher>) -> bool {
+            fn matches(types: &::venix::indexmap::IndexSet<::std::any::TypeId, ::venix::fxhash::FxBuildHasher>) -> bool {
                 <( #(#field_types,)* ) as ::venix::query::query::QueryData>::matches(types)
             }
             #[inline(always)]
