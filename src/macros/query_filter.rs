@@ -17,7 +17,7 @@ pub fn derive_filter_impl(input: TokenStream) -> TokenStream {
     };
 
     let mut field_types = Vec::new();
-    let mut field_idents = Vec::new();
+    let mut scratch_idents = Vec::new();
 
     let is_named = matches!(fields, Fields::Named(_));
     let is_unnamed = matches!(fields, Fields::Unnamed(_));
@@ -26,56 +26,51 @@ pub fn derive_filter_impl(input: TokenStream) -> TokenStream {
         Fields::Named(fields_named) => {
             for field in &fields_named.named {
                 field_types.push(field.ty.clone());
-                field_idents.push(field.ident.clone().unwrap());
+                let ident = field.ident.clone().unwrap();
+                scratch_idents.push(syn::Ident::new(&format!("_{}", ident), proc_macro2::Span::call_site()));
             }
         }
         Fields::Unnamed(fields_unnamed) => {
             for (i, field) in fields_unnamed.unnamed.iter().enumerate() {
                 field_types.push(field.ty.clone());
-                let dummy_ident =
-                    syn::Ident::new(&format!("field_{}", i), proc_macro2::Span::call_site());
-                field_idents.push(dummy_ident);
+                scratch_idents.push(syn::Ident::new(&format!("_field_{}", i), proc_macro2::Span::call_site()));
             }
         }
         Fields::Unit => {}
     }
-
-    let placeholders: Vec<_> = (0..field_types.len()).map(|_| quote! { _ }).collect();
-
-    let mock_instantiation = if is_named {
+    let link_fields_check = if is_named {
+        let mut field_mappings = Vec::new();
+        match fields {
+            Fields::Named(fields_named) => {
+                for (real_ident, scratch_ident) in fields_named.named.iter().map(|f| f.ident.as_ref().unwrap()).zip(&scratch_idents) {
+                    field_mappings.push(quote! { #real_ident: #scratch_ident });
+                }
+            }
+            _ => {}
+        }
+        
         quote! {
-            let mock_value: #name #ty_generics = unsafe { ::std::mem::zeroed() };
-            let #name { #( #field_idents, )* } = mock_value;
-            #( let _ = #field_idents; )*
+            if false {
+                let #name { #( #field_mappings ),* } = unsafe { ::std::mem::zeroed() };
+            }
         }
     } else if is_unnamed {
         quote! {
-            let mock_value: #name #ty_generics = unsafe { ::std::mem::zeroed() };
-            let #name ( #( #placeholders, )* ) = mock_value;
+            if false {
+                let #name ( #( #scratch_idents, )* ) = unsafe { ::std::mem::zeroed() };
+            }
         }
     } else {
-        quote! {
-            let _mock_value: #name #ty_generics = unsafe { ::std::mem::zeroed() };
-        }
+        quote! {}
     };
 
-    let dummy_function_name = syn::Ident::new(
-        &format!("__silence_dead_code_filter_{}", name),
-        proc_macro2::Span::call_site(),
-    );
 
     let expanded = quote! {
-        #[allow(dead_code)]
-        const _: () = {
-            #[inline(always)]
-            fn #dummy_function_name #impl_generics () #where_clause {
-                #mock_instantiation
-            }
-        };
-
         impl #impl_generics ::venix::query::filter::QueryFilter for #name #ty_generics #where_clause {
             #[inline(always)]
             fn matches(types: &::venix::extensions::AccessHashSet<::std::any::TypeId>) -> bool {
+                #link_fields_check
+
                 <( #(#field_types,)* ) as ::venix::query::filter::QueryFilter>::matches(types)
             }
 
@@ -83,6 +78,7 @@ pub fn derive_filter_impl(input: TokenStream) -> TokenStream {
             fn matches_negated(types: &::venix::extensions::AccessHashSet<::std::any::TypeId>) -> bool {
                 <( #(#field_types,)* ) as ::venix::query::filter::QueryFilter>::matches_negated(types)
             }
+
             #[inline(always)]
             fn collect_filter(
                 withs: &mut ::venix::extensions::AccessVec<::std::any::TypeId>,
