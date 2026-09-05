@@ -1,3 +1,5 @@
+#![deprecated(since = "1.1.1", note = "use the avenix crate instead")]
+
 extern crate proc_macro;
 mod attributes;
 mod macros {
@@ -6,6 +8,8 @@ mod macros {
     pub mod query_data;
     pub mod system_param;
 }
+
+
 
 use proc_macro::TokenStream;
 
